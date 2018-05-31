@@ -4,7 +4,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"time"
+	"log"
 	"github.com/davecgh/go-spew/spew"
+	"sync"
 )
 
 type Block struct {
@@ -17,6 +19,9 @@ type Block struct {
 
 var Blockchain []Block
 
+var mutex = &sync.Mutex{}
+
+
 func CalcualteHash(block Block) string {
 	record:=string(block.Index)+block.Timestamp+string(block.BPM)+block.Prehash
 	h:=sha256.New()
@@ -27,6 +32,7 @@ func CalcualteHash(block Block) string {
 }
 
 func GenerateBlock(oldBlock Block,BPM int) (Block,error) {
+	log.Println("generateblock, oldblock:"+spew.Sdump(oldBlock))
 	var newBlock Block
 	t:=time.Now()
 	newBlock.Index=oldBlock.Index+1
@@ -34,7 +40,7 @@ func GenerateBlock(oldBlock Block,BPM int) (Block,error) {
 	newBlock.BPM=BPM
 	newBlock.Prehash=oldBlock.Hash
 	newBlock.Hash=CalcualteHash(newBlock)
-	spew.Dump(newBlock)
+	log.Println("generateblock, newblock:"+spew.Sdump(newBlock))
 	return newBlock,nil
 }
 
@@ -52,8 +58,10 @@ func IsBlockValid(newBlock ,oldBlock Block) bool {
 }
 
 func ReplaceChain(newBlocks []Block) {
+	mutex.Lock()
 	if len(newBlocks)>len(Blockchain) {
 		Blockchain = newBlocks
 	}
+	mutex.Unlock()
 }
 
