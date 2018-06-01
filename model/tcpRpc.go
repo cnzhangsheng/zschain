@@ -44,7 +44,7 @@ func handleConn(conn net.Conn) {
 		for scanner.Scan() {
 			bpm, err := strconv.Atoi(scanner.Text())
 			if err != nil {
-				log.Println("%v not a number: %v", scanner.Text(), err)
+				log.Println("input is not a number: ", scanner.Text(), err)
 				continue
 			}
 			newBlock, err := GenerateBlock(bc[len(bc)-1], bpm)
